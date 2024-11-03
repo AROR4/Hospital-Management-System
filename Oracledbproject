@@ -1,0 +1,350 @@
+import cx_Oracle
+import datetime
+
+def create_connection():
+    try:
+        conn = cx_Oracle.connect('system/khdmdcm@//localhost:1521/xe')
+        print(f"Connected to Oracle Database version: {conn.version}")
+        return conn
+    except Exception as err:
+        print(f"Error connecting to database: {err}")
+        return None
+
+def drop_existing_tables(conn):
+    tables = ['Phone', 'Bill', 'Medicine', 'Treatment', 'Room', 'Doctor', 'Patient', 'Department']
+    cursor = conn.cursor()
+    for table in tables:
+        try:
+            cursor.execute(f"DROP TABLE {table}")
+            print(f"Dropped table {table}")
+        except:
+            pass
+    conn.commit()
+    cursor.close()
+
+def display_table(conn, table_name):
+    cursor = conn.cursor()
+    try:
+        cursor.execute(f"SELECT * FROM {table_name}")
+        rows = cursor.fetchall()
+        if rows:
+            # Get column names
+            col_names = [desc[0] for desc in cursor.description]
+            print(f"\nTable: {table_name}")
+            print("-" * 80)
+            print(" | ".join(col_names))
+            print("-" * 80)
+            for row in rows:
+                print(" | ".join(str(item) for item in row))
+        else:
+            print(f"\nNo data in table {table_name}")
+    except Exception as err:
+        print(f"Error displaying table {table_name}: {err}")
+    cursor.close()
+
+def insert_records(cursor):
+    # Insert Department records
+    cursor.execute("INSERT INTO Department VALUES (1, 'Cardiology')")
+    cursor.execute("INSERT INTO Department VALUES (2, 'Neurology')")
+    cursor.execute("INSERT INTO Department VALUES (3, 'Orthopedics')")
+    cursor.execute("INSERT INTO Department VALUES (4, 'Pediatrics')")
+    cursor.execute("INSERT INTO Department VALUES (5, 'Oncology')")
+
+    # Insert Patient records
+    cursor.execute("INSERT INTO Patient VALUES (1, 'John', 'Doe', '123 Main St', TO_DATE('1980-01-01', 'YYYY-MM-DD'))")
+    cursor.execute("INSERT INTO Patient VALUES (2, 'Jane', 'Smith', '456 Elm St', TO_DATE('1990-02-02', 'YYYY-MM-DD'))")
+    cursor.execute("INSERT INTO Patient VALUES (3, 'Alice', 'Johnson', '789 Maple St', TO_DATE('1975-03-03', 'YYYY-MM-DD'))")
+    cursor.execute("INSERT INTO Patient VALUES (4, 'Bob', 'Williams', '101 Oak St', TO_DATE('1985-04-04', 'YYYY-MM-DD'))")
+    cursor.execute("INSERT INTO Patient VALUES (5, 'Charlie', 'Brown', '202 Pine St', TO_DATE('1995-05-05', 'YYYY-MM-DD'))")
+
+    # Insert Doctor records
+    cursor.execute("INSERT INTO Doctor VALUES (1, 'Dr. Adams', 'Cardiology', 1)")
+    cursor.execute("INSERT INTO Doctor VALUES (2, 'Dr. Baker', 'Neurology', 2)")
+    cursor.execute("INSERT INTO Doctor VALUES (3, 'Dr. Clark', 'Orthopedics', 3)")
+    cursor.execute("INSERT INTO Doctor VALUES (4, 'Dr. Davis', 'Pediatrics', 4)")
+    cursor.execute("INSERT INTO Doctor VALUES (5, 'Dr. Evans', 'Oncology', 5)")
+
+    # Insert Room records
+    cursor.execute("INSERT INTO Room VALUES (101, 'Single', 1200.00, 1)")
+    cursor.execute("INSERT INTO Room VALUES (102, 'Double', 1500.00, 2)")
+    cursor.execute("INSERT INTO Room VALUES (103, 'ICU', 2000.00, 3)")
+    cursor.execute("INSERT INTO Room VALUES (104, 'Single', 1200.00, 4)")
+    cursor.execute("INSERT INTO Room VALUES (105, 'ICU', 2500.00, 5)")
+
+    # Insert Treatment records
+    cursor.execute("INSERT INTO Treatment VALUES (1, TO_DATE('2023-01-10', 'YYYY-MM-DD'), TO_DATE('2023-01-15', 'YYYY-MM-DD'), 3000.00, 1, 1)")
+    cursor.execute("INSERT INTO Treatment VALUES (2, TO_DATE('2023-02-05', 'YYYY-MM-DD'), TO_DATE('2023-02-10', 'YYYY-MM-DD'), 5000.00, 2, 2)")
+    cursor.execute("INSERT INTO Treatment VALUES (3, TO_DATE('2023-03-01', 'YYYY-MM-DD'), TO_DATE('2023-03-05', 'YYYY-MM-DD'), 4500.00, 3, 3)")
+    cursor.execute("INSERT INTO Treatment VALUES (4, TO_DATE('2023-04-12', 'YYYY-MM-DD'), TO_DATE('2023-04-20', 'YYYY-MM-DD'), 6000.00, 4, 4)")
+    cursor.execute("INSERT INTO Treatment VALUES (5, TO_DATE('2023-05-07', 'YYYY-MM-DD'), TO_DATE('2023-05-12', 'YYYY-MM-DD'), 3500.00, 5, 5)")
+
+    # Insert Medicine records
+    cursor.execute("INSERT INTO Medicine VALUES (1, 1, 'Aspirin', '500mg', 'Once a day')")
+    cursor.execute("INSERT INTO Medicine VALUES (2, 2, 'Ibuprofen', '200mg', 'Twice a day')")
+    cursor.execute("INSERT INTO Medicine VALUES (3, 3, 'Paracetamol', '500mg', 'Three times a day')")
+    cursor.execute("INSERT INTO Medicine VALUES (4, 4, 'Antibiotic', '250mg', 'Twice a day')")
+    cursor.execute("INSERT INTO Medicine VALUES (5, 5, 'Vitamin C', '1000mg', 'Once a day')")
+
+    # Insert Bill records
+    cursor.execute("INSERT INTO Bill VALUES (1, 1000.00, TO_DATE('2023-01-16', 'YYYY-MM-DD'), 1)")
+    cursor.execute("INSERT INTO Bill VALUES (2, 2000.00, TO_DATE('2023-02-11', 'YYYY-MM-DD'), 2)")
+    cursor.execute("INSERT INTO Bill VALUES (3, 1500.00, TO_DATE('2023-03-06', 'YYYY-MM-DD'), 3)")
+    cursor.execute("INSERT INTO Bill VALUES (4, 1800.00, TO_DATE('2023-04-21', 'YYYY-MM-DD'), 4)")
+    cursor.execute("INSERT INTO Bill VALUES (5, 2100.00, TO_DATE('2023-05-13', 'YYYY-MM-DD'), 5)")
+
+    # Insert Phone records
+    cursor.execute("INSERT INTO Phone VALUES ('1234567890', 1)")
+    cursor.execute("INSERT INTO Phone VALUES ('2345678901', 2)")
+    cursor.execute("INSERT INTO Phone VALUES ('3456789012', 3)")
+    cursor.execute("INSERT INTO Phone VALUES ('4567890123', 4)")
+    cursor.execute("INSERT INTO Phone VALUES ('5678901234', 5)")
+
+    # Insert lives records
+    cursor.execute("INSERT INTO lives VALUES (1, 101, TO_DATE('2023-01-01', 'YYYY-MM-DD'))")
+    cursor.execute("INSERT INTO lives VALUES (2, 102, TO_DATE('2023-02-05', 'YYYY-MM-DD'))")
+    cursor.execute("INSERT INTO lives VALUES (3, 103, TO_DATE('2023-03-10', 'YYYY-MM-DD'))")
+    cursor.execute("INSERT INTO lives VALUES (4, 104, TO_DATE('2023-04-01', 'YYYY-MM-DD'))")
+    cursor.execute("INSERT INTO lives VALUES (5, 105, TO_DATE('2023-05-07', 'YYYY-MM-DD'))")
+
+
+def create_tables(conn):
+    drop_existing_tables(conn)
+    cursor = conn.cursor()
+    
+    # Create tables
+    create_tables = [
+        """CREATE TABLE Department (
+            DepartmentID NUMBER PRIMARY KEY,
+            DepartmentName VARCHAR2(50)
+        )""",
+        
+        """CREATE TABLE Patient (
+            PatientID NUMBER PRIMARY KEY,
+            FName VARCHAR2(50),
+            LName VARCHAR2(50),
+            Address VARCHAR2(100),
+            DOB DATE
+        )""",
+        
+        """CREATE TABLE Doctor (
+            DoctorID NUMBER PRIMARY KEY,
+            Name VARCHAR2(50),
+            Specialization VARCHAR2(50),
+            DepartmentID NUMBER,
+            FOREIGN KEY (DepartmentID) REFERENCES Department(DepartmentID)
+        )""",
+        
+        """CREATE TABLE Room (
+            RoomID NUMBER PRIMARY KEY,
+            RoomType VARCHAR2(20),
+            CostPerDay NUMBER(10,2),
+            PatientID NUMBER,
+            FOREIGN KEY (PatientID) REFERENCES Patient(PatientID)
+        )""",
+        
+        """CREATE TABLE Treatment (
+            TreatmentID NUMBER PRIMARY KEY,
+            StartDate DATE,
+            EndDate DATE,
+            TreatmentCost NUMBER(10,2),
+            PatientID NUMBER,
+            DoctorID NUMBER,
+            FOREIGN KEY (PatientID) REFERENCES Patient(PatientID),
+            FOREIGN KEY (DoctorID) REFERENCES Doctor(DoctorID)
+        )""",
+        
+        """CREATE TABLE Medicine (
+            MedicineID NUMBER,
+            TreatmentID NUMBER,
+            MedicineName VARCHAR2(50),
+            Dosage VARCHAR2(20),
+            Frequency VARCHAR2(20),
+            PRIMARY KEY (MedicineID, TreatmentID),
+            FOREIGN KEY (TreatmentID) REFERENCES Treatment(TreatmentID)
+        )""",
+        
+        """CREATE TABLE Bill (
+            BillID NUMBER PRIMARY KEY,
+            Amount NUMBER(10,2),
+            BillDate DATE,
+            PatientID NUMBER,
+            FOREIGN KEY (PatientID) REFERENCES Patient(PatientID)
+        )""",
+        
+        """CREATE TABLE Phone (
+            PhoneNum VARCHAR2(15),
+            PatientID NUMBER,
+            PRIMARY KEY (PhoneNum, PatientID),
+            FOREIGN KEY (PatientID) REFERENCES Patient(PatientID)
+        )""",
+        
+         """CREATE TABLE lives (
+            PatientID NUMBER,
+            RoomID NUMBER,
+            FOREIGN KEY (PatientID) REFERENCES Patient(PatientID),
+            FOREIGN KEY (RoomID) REFERENCES Room(RoomID)
+        )"""
+    ]
+
+    
+    # Execute create tables
+    for query in create_tables:
+        try:
+            cursor.execute(query)
+            print(f"Table created successfully")
+        except Exception as err:
+            print(f"Error creating table: {err}")
+
+    conn.commit()
+    cursor.close()
+
+def execute_query(conn, query_num):
+    cursor = conn.cursor()
+    
+    queries = {
+        1: ("""CREATE TABLE Patient(
+                PatientID NUMBER PRIMARY KEY,
+                FName VARCHAR2(50),
+                LName VARCHAR2(50),
+                Address VARCHAR2(100),
+                DOB DATE
+            )""", "Patient_New"),
+        
+        2: ("""INSERT INTO Doctor (DoctorID, Name, Specialization, DepartmentID)
+             VALUES (1100, 'John', 'Neurology', 1)""", "Doctor"),
+        
+        3: ("""UPDATE Room 
+             SET CostPerDay = 1500.00 
+             WHERE RoomID = 101""", "Room"),
+        
+        4: """SELECT p.FName || ' ' || p.LName AS PatientName, 
+                    d.Name AS DoctorName
+             FROM Patient p
+             JOIN Treatment t ON p.PatientID = t.PatientID
+             JOIN Doctor d ON t.DoctorID = d.DoctorID""",
+        
+        5: """SELECT t.TreatmentID, m.MedicineName, m.Dosage
+             FROM Treatment t
+             JOIN Medicine m ON t.TreatmentID = m.TreatmentID""",
+        
+        6: ("""ALTER TABLE Department 
+             ADD Head_of_Department VARCHAR2(50)""", "Department"),
+        
+        7: """SELECT AVG(TreatmentCost) AS AverageCost
+             FROM Treatment
+             WHERE DoctorID = 1""",
+        
+        8: """SELECT p.FName || ' ' || p.LName AS PatientName, 
+                    r.RoomType, r.CostPerDay
+             FROM Patient p
+             JOIN Room r ON p.PatientID = r.PatientID""",
+        
+        9: """SELECT d.Name AS DoctorName, dept.DepartmentName
+             FROM Doctor d
+             JOIN Department dept ON d.DepartmentID = dept.DepartmentID""",
+        
+        10: """SELECT DoctorName, TreatmentCount
+                FROM (
+                    SELECT d.Name AS DoctorName, COUNT(t.TreatmentID) AS TreatmentCount
+                    FROM Doctor d
+                    JOIN Treatment t ON d.DoctorID = t.DoctorID
+                    GROUP BY d.DoctorID, d.Name
+                    ORDER BY COUNT(t.TreatmentID) DESC
+                ) 
+                WHERE ROWNUM = 1 """,
+        11: """SELECT d.DepartmentName, COUNT(p.PatientID) AS PatientCount
+                FROM Department d
+                LEFT JOIN Doctor doc ON d.DepartmentID = doc.DepartmentID
+                LEFT JOIN Treatment t ON doc.DoctorID = t.DoctorID
+                LEFT JOIN Patient p ON t.PatientID = p.PatientID
+                GROUP BY d.DepartmentName
+                ORDER BY PatientCount DESC""",
+        12: """SELECT d.Name AS DoctorName, SUM(t.TreatmentCost) AS TotalRevenue
+            FROM Doctor d
+            JOIN Treatment t ON d.DoctorID = t.DoctorID
+            GROUP BY d.Name
+            ORDER BY TotalRevenue DESC""",
+        13: """SELECT RoomType, AVG(CostPerDay) AS AverageCost
+            FROM Room
+            GROUP BY RoomType
+            ORDER BY AverageCost DESC""",
+        14: """SELECT d.Name AS DoctorName, COUNT(t.TreatmentID) AS TreatmentsCount
+            FROM Doctor d
+            LEFT JOIN Treatment t ON d.DoctorID = t.DoctorID
+            GROUP BY d.Name
+            ORDER BY TreatmentsCount DESC"""
+    }
+    
+    try:
+        if isinstance(queries[query_num], tuple):
+            # For CREATE, INSERT, UPDATE queries
+            cursor.execute(queries[query_num][0])
+            conn.commit()
+            print(f"Query {query_num} executed successfully")
+            display_table(conn, queries[query_num][1])
+        else:
+            # For SELECT queries
+            cursor.execute(queries[query_num])
+            results = cursor.fetchall()
+            if results:
+                # Get column names
+                col_names = [desc[0] for desc in cursor.description]
+                print("\nQuery Results:")
+                print("-" * 80)
+                print(" | ".join(col_names))
+                print("-" * 80)
+                for row in results:
+                    print(" | ".join(str(item) for item in row))
+            else:
+                print("No results found")
+        
+    except Exception as err:
+        print(f"Error executing query {query_num}: {err}")
+    
+    cursor.close()
+
+def main():
+    conn = create_connection()
+    if not conn:
+        return
+    
+    print("\nDo you want to create tables and insert sample data? (yes/no)")
+    if input().lower() == 'yes':
+        create_tables(conn)
+        insert_records(conn)
+        
+    
+    while True:
+        print("\nAvailable queries:")
+        print("1. Create new Patient table")
+        print("2. Insert new doctor record")
+        print("3. Update room cost")
+        print("4. Retrieve patients with their doctors")
+        print("5. List treatments with medicines")
+        print("6. Add Head_of_Department column to Department table")
+        print("7. Find average treatment cost for doctor ID 1")
+        print("8. Retrieve patient room details")
+        print("9. Retrieve doctors with their departments")
+        print("10. Find doctor with most treatments")
+        print("11. Count of Patients in Each Department")
+        print("12.Total Revenue Generated By Each Doctor")
+        print("13. Average Cost of Rooms by Type")
+        print("14. Doctors with the Number of Treatments Performed")
+        print("0. Exit")
+        
+        try:
+            choice = int(input("\nEnter query number (0-14): "))
+            if choice == 0:
+                break
+            elif 1 <= choice <= 14:
+                execute_query(conn, choice)
+            else:
+                print("Invalid choice. Please enter a number between 0 and 14")
+        except ValueError:
+            print("Invalid input. Please enter a number")
+    
+    conn.close()
+    print("\nConnection closed")
+
+if __name__ == "__main__":
+    main()
